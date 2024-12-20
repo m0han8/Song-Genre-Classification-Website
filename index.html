@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Song Genre Classification</title>
+
+    <!-- Bootstrap CSS for styling -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('https://wallpapers.com/images/hd/music-genres-1920-x-1200-wallpaper-k3sse8plhz2e0gam.jpg');
+            background-size: cover;
+            background-position: center;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;  /* This makes the container fill the entire viewport height */
+            margin-top: 0;
+        }
+        .row {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .card {
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 30px;
+            width: 100%;  /* Ensure the card takes up full width of the column */
+            max-width: 500px;  /* Maximum width to avoid it becoming too large */
+        }
+        .card-header {
+            background-color: #008cba;
+            color: white;
+            font-size: 1.5rem;
+        }
+        .btn-custom {
+            background-color: #008cba;
+            color: white;
+            border-radius: 20px;
+            padding: 10px 25px;
+            font-size: 1.2rem;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 0.9rem;
+            color: #008cba;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 1.5rem;
+            padding: 15px;
+            border: 2px solid #008cba;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.6);
+            color: black;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow-lg">
+                    <div class="card-header text-center">
+                        <h3>Song Genre Classification</h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-center mb-4">Upload an audio file to predict its genre.</p>
+                        <form id="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <input type="file" class="form-control-file" name="file" accept="audio/*" required>
+                            </div>
+                            <button type="submit" class="btn btn-custom btn-block">Predict Genre</button>
+                        </form>
+                        <div id="genre-result" class="result" style="display: none;">
+                            Predicted Genre: <span id="predicted-genre"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Prevent form submission and handle it with JavaScript
+        document.getElementById('upload-form').onsubmit = function(event) {
+            event.preventDefault();  // Prevent the form from submitting the traditional way
+
+            // Create a FormData object to send the file
+            let formData = new FormData();
+            let fileInput = document.querySelector('input[name="file"]');
+            formData.append('file', fileInput.files[0]);
+
+            // Send the file to the backend via POST request
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Server responded with an error: ' + response.status);
+                }
+                return response.json();  // Assuming the backend returns JSON
+            })
+            .then(data => {
+                if (data.predicted_genre) {
+                    const genre = data.predicted_genre;  // The backend should return the predicted genre as 'predicted_genre'
+                    displayGenre(genre);  // Display the predicted genre
+                } else {
+                    throw new Error('Genre prediction not returned by server');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('There was an error processing your request.');
+            });
+        };
+
+        // Display the predicted genre
+        function displayGenre(genre) {
+            const resultElement = document.getElementById('genre-result');
+            const genreElement = document.getElementById('predicted-genre');
+            genreElement.textContent = genre;
+            resultElement.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
